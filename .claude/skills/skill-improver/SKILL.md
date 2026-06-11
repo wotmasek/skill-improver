@@ -5,134 +5,150 @@ description: >-
   lessons into concrete improvements to existing Claude Code skills (or a draft
   of a new skill). Use when the user runs /skill-improver, asks to "improve
   skills", wants a retrospective on the work just done, wants to capture lessons
-  learned into a skill, or wants to optimize a skill for token efficiency and
-  output quality. ALWAYS asks for the user's own feedback first and treats it as
-  the highest-priority signal. Proposes changes as a diff and waits for approval
-  before editing any file.
+  learned into a skill, or wants to optimize a skill/process for token
+  efficiency and output quality. ALWAYS asks for the user's own feedback first
+  and treats it as the highest-priority signal, then runs its own first-
+  principles analysis of the process. Proposes changes as a diff and waits for
+  approval before editing any file.
 ---
 
 # Skill Improver
 
-A meta-skill. It looks back at what was just done and *how*, draws conclusions
-about the process, and translates them into improvements to the skills that
-shaped (or should have shaped) the work.
+A meta-skill. It looks back at what was just done and *how*, draws its own
+conclusions about the process, and translates them into improvements to the
+skills (and adjacent mechanisms) that shaped — or should have shaped — the work.
 
-It never edits a skill silently. It **proposes** changes and waits for the
-user's approval.
+Two engines feed it:
+1. **User feedback** — the highest-priority signal (always solicited first).
+2. **First-principles process analysis** — its own rigorous, autonomous search
+   for optimization, independent of whether the user flagged anything.
+
+It never edits silently. It **proposes** changes and waits for approval.
 
 ## Operating principles
 
-- **User feedback wins.** The user's own feedback is the strongest signal.
-  Always solicit it explicitly and weight it above your own observations. If
-  your analysis conflicts with their feedback, follow their feedback and say so.
-- **Evidence over opinion.** Every proposed change must trace back to something
-  that actually happened in this session (a wrong turn, a re-run, a missing
-  step, a wasted batch of tokens, an explicit correction from the user).
-- **Propose, don't impose.** Present changes as a reviewable diff. Edit files
-  only after the user approves.
-- **Smaller and sharper.** Improvements should make skills *more* token-efficient,
-  not less. Adding words is a cost — justify it, or cut something else.
+- **User feedback wins.** Solicit it explicitly and weight it above your own
+  findings. If your analysis conflicts with their feedback, follow the feedback
+  and say so.
+- **But never stop at feedback.** Always run the autonomous process analysis
+  (`reference/process-analysis.md`). Extract the maximum signal — relentlessly
+  hunt for what to delete, simplify, reorder, automate, or cache.
+- **Evidence over opinion.** Every proposed change traces to something that
+  actually happened this session (a wrong turn, a re-run, a missing step, wasted
+  tokens, an explicit correction).
+- **Restraint, not drama.** Optimize hard, but do not cause drastic evolution.
+  The modification level (below) caps how far any single run may go.
+- **Smaller and sharper.** Adding words is a cost paid on every future load.
+  Justify additions or cut something else. Enforce the length mechanism
+  (`reference/length-and-structure.md`).
+- **Propose, don't impose.** Present a reviewable diff; edit only after approval.
 
 ## Workflow
 
 ### Step 1 — Collect the user's feedback first (highest priority)
 
-Before analyzing anything, ask the user directly, e.g.:
+Before analyzing anything, ask directly, e.g.:
 
 > "Before I run the retrospective — do you have your own feedback on how this
 > went? What felt slow, wrong, or annoying? Anything you'd want done
 > differently next time?"
 
-Capture their points verbatim as **priority findings**. These outrank anything
-you discover on your own. If they have no feedback, continue — but never skip
-the ask.
+Capture their points verbatim as **priority findings** — they outrank your own.
+Also read their tone for severity (see Step 3). If they have no feedback,
+continue — but never skip the ask.
 
-### Step 2 — Reconstruct what happened (retrospective)
+### Step 2 — Run both retrospective engines
 
-Build a short, factual timeline of this session from the conversation context:
+First reconstruct a short, factual timeline (goal, path, detours, retries, dead
+ends, rework, where you were corrected, which skills fired or failed to fire).
 
-- What was the goal? Was it met?
-- What path did the work take? Note detours, retries, dead ends, and rework.
-- Where were tokens spent unnecessarily (re-reading files, redundant searches,
-  oversized tool outputs, repeated explanations, work later thrown away)?
-- Where did the user have to correct or redirect you?
-- Which skill(s) were active, and did they actually fire when they should have?
+Then run the **first-principles process analysis** — read
+`reference/process-analysis.md` and apply its six lenses (question the
+requirement → delete → simplify → reorder → automate → cache) with the relevance
+bar. Produce autonomous findings that stand on their own, separate from feedback.
 
-If a stored transcript is needed for detail, session logs live under
-`~/.claude/projects/<project>/`. Prefer the in-context conversation first; only
-read transcript files if the context is insufficient.
+### Step 3 — Determine the modification level from severity
 
-### Step 3 — Identify the target skills
+The level is a **cap on how far proposals may go**, derived from how the process
+actually went (feedback + your severity read), not chosen arbitrarily.
 
-Default scope: project skills in `.claude/skills/`. Also accept a skill path
-the user names explicitly. To list candidates:
+- **Went well** (smooth, minor nits) → **L1 Surgical**: only changes with strong
+  direct evidence; minimal diffs (fix a description line, add one warning, fix
+  one ambiguous step). No restructuring.
+- **Mediocre** (some rework/detours, fixable friction) → **L2 Structural**
+  *(default)*: L1 + reorganize, split into references, add examples/counter-
+  examples, light condensing, fix step order. No change to what the skill does.
+- **Went badly** (significant wasted effort, repeated corrections, wrong
+  outcomes) → **L3 Deep**: L2 + first-principles consolidation, merging
+  redundant steps, rethinking the workflow.
 
-- Look in `.claude/skills/*/SKILL.md` (project) and, if relevant, the skill the
-  user points at.
+The level is a ceiling, not a quota — even at L3, change only what the evidence
+warrants. When severity is unclear, default to **L2**.
 
-For each finding from Steps 1–2, map it to either:
-- an **existing skill** that should have prevented it, or
-- a **gap** — a recurring pattern with no skill covering it (candidate for a new skill).
+**Deep-change gate:** changing a skill's *purpose, scope, or behavior* ("what
+the skill is") is allowed only at L3 **and** only behind a separate, explicit
+second approval. Flag such proposals distinctly; without that extra "yes" they
+stay behavior-preserving.
 
-### Step 4 — Evaluate against the rubric
+### Step 4 — Identify targets
 
-Score each target skill on the dimensions in
-`reference/evaluation-rubric.md` (read it now). In short:
+Default scope: project skills in `.claude/skills/*/SKILL.md`, plus any skill the
+user names. Map each finding to either an **existing skill** that should have
+prevented it, or a **gap** (recurring pattern with no skill → candidate new
+skill, use `reference/skill-template.md`).
 
-1. **Trigger / description accuracy** — would the description make the skill
-   fire at the right time, and *not* at the wrong time? (Most common failure.)
-2. **Instruction clarity** — unambiguous steps, right order, no gaps.
-3. **Missing steps & anti-patterns** — add steps that were missing; add explicit
-   "don't do X" warnings for mistakes that actually happened this session.
-4. **Examples & counter-examples** — concrete "use when…" and "do NOT use when…".
-5. **Token efficiency vs. output quality** — does the skill get a better result
-   for fewer tokens? Look for: bloated instructions, content that belongs in a
-   reference file (progressive disclosure), steps that cause re-reads or
-   redundant tool calls.
+Process findings may also point **beyond skills** — a hook, a slash command, a
+settings change. You may propose these, and (after approval) implement them too,
+not just skill files.
 
-### Step 5 — Produce proposals
+### Step 5 — Evaluate targets and apply length hygiene
 
-For each target skill, write a proposal containing:
+Score each target skill against `reference/evaluation-rubric.md` (trigger
+accuracy, instruction clarity, missing steps/anti-patterns, examples, token
+efficiency).
 
-- **Finding** — what happened (cite the moment), and which feedback/observation
-  it came from. Mark priority findings (from Step 1) clearly.
-- **Change** — the exact edit, shown as a before/after or unified diff.
-- **Why it helps** — tie it to trigger accuracy, clarity, missing-step,
-  example, or token efficiency. State the expected effect ("should stop the
-  skill from re-reading the whole file", etc.).
+For every target you touch, apply `reference/length-and-structure.md`: if a
+`SKILL.md` approaches ~200 lines (or holds optional/rarely-needed detail),
+propose extracting it into `reference/` files with clean navigation; apply
+**light** condensing that removes redundancy only and never drops an
+instruction, warning, or step.
 
-If a gap was found, draft a **new skill** using `reference/skill-template.md`
-(read it when needed). Present it as a proposal too — do not create it unsolicited.
+### Step 6 — Produce proposals
 
-Keep proposals ranked: priority (user feedback) first, then highest-impact.
+For each: **Finding** (what happened + evidence; mark priority findings from
+Step 1 and which lens autonomous ones came from) → **Change** (before/after or
+unified diff) → **Level** it requires (L1/L2/L3; flag any deep-change-gate item)
+→ **Why it helps** (trigger / clarity / missing-step / example / token cost) and
+expected effect. Rank: priority feedback first, then highest-impact.
 
-### Step 6 — Approve, then apply
+If the session was genuinely clean, say so and propose little or nothing.
 
-Show the full set of proposals and ask the user which to apply (all / some /
-none / modified). Only after approval:
+### Step 7 — Approve, then apply
 
-- Edit the relevant `SKILL.md` / reference files.
-- For a new skill, create `.claude/skills/<name>/SKILL.md`.
-- Summarize what changed and what was deliberately left out.
+Show the full proposal set and ask which to apply (all / some / none /
+modified). Deep-change-gate items need their own explicit yes. Only after
+approval: edit the skill / reference files (and any approved hook / command /
+settings), then summarize what changed and what was deliberately left out.
 
 Do not commit or push unless the user asks.
 
 ## Guardrails / anti-patterns
 
-- Do **not** edit any skill before the user approves the proposals.
-- Do **not** invent findings to justify a change — if the session was clean,
-  say so and propose nothing.
-- Do **not** make skills longer "to be safe." Every added line is a token cost
-  paid on every future invocation; prefer cutting or moving detail to a
-  reference file.
-- Do **not** overwrite a user's intentional wording just because it's verbose —
-  confirm if unsure.
-- Keep the main `SKILL.md` of any skill lean; push depth into `reference/` files
-  that are read on demand.
+- Do **not** edit anything before approval; deep-change items need a second yes.
+- Do **not** invent findings to justify a change — a clean session yields few or none.
+- Do **not** cause drastic evolution; respect the level ceiling.
+- Do **not** make skills longer "to be safe" — prefer cutting or moving detail
+  to a reference file. Never drop a real instruction while condensing.
+- Do **not** let autonomous analysis become noise — apply the relevance bar
+  (real effect on time, tokens, or correctness).
 
 ## Reference files
 
-- `reference/evaluation-rubric.md` — the scoring dimensions and token-efficiency
-  heuristics. Read in Step 4.
-- `reference/skill-template.md` — structure and frontmatter for drafting a new
-  skill. Read in Step 5 when proposing a new skill.
+- `reference/process-analysis.md` — the six-lens first-principles engine,
+  severity→level mapping, and relevance bar. Read in Step 2.
+- `reference/evaluation-rubric.md` — scoring dimensions and token heuristics.
+  Read in Step 5.
+- `reference/length-and-structure.md` — the ~200-line mechanism, how to split
+  into references, navigation convention, light-condensing rules. Read in Step 5.
+- `reference/skill-template.md` — structure/frontmatter for a new skill. Read in
+  Step 4 when proposing one.

@@ -1,8 +1,14 @@
+Part of the **skill-improver** skill — read in Step 5 to score a target skill.
+
 # Skill Evaluation Rubric
 
-Use this when scoring a target skill in Step 4. For each dimension, decide:
-PASS (leave it), WEAK (propose an improvement), or MISSING (add it). Always
-attach the finding to something that actually happened in the session.
+Use this when scoring a target skill. For each dimension, decide: PASS (leave
+it), WEAK (propose an improvement), or MISSING (add it). Always attach the
+finding to something that actually happened in the session.
+
+> File-length and structure (the ~200-line split, navigation, light condensing)
+> is handled by `reference/length-and-structure.md`, not here. This rubric scores
+> *quality*; that file handles the *mechanism*.
 
 ## 1. Trigger / description accuracy
 
