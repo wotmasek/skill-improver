@@ -5,9 +5,9 @@ description: >-
   lessons into concrete improvements to existing Claude Code skills (or a draft
   of a new skill). Use when the user runs /skill-improver, asks to "improve
   skills", wants a retrospective on the work just done, wants to capture lessons
-  learned into a skill, or wants to optimize a skill/process for token
-  efficiency and output quality. ALWAYS asks for the user's own feedback first
-  and treats it as the highest-priority signal, then runs its own first-
+  learned into a skill, or wants to improve a skill/process — primarily its
+  output quality, secondarily token/step efficiency. ALWAYS asks for the user's
+  own feedback first and treats it as the highest-priority signal, then runs its own first-
   principles analysis of the process. Proposes changes as a diff and waits for
   approval before editing any file.
 ---
@@ -27,20 +27,31 @@ It never edits silently. It **proposes** changes and waits for approval.
 
 ## Operating principles
 
+- **Quality first, cost second.** Every change exists to improve the *final
+  output*. Cutting steps or tokens is welcome only when it preserves or raises
+  that quality — reaching the same-or-better result with less work is
+  optimization; reaching a worse result more cheaply is not. Never trade quality
+  for cost. The only exception: the user explicitly opts into a quality/cost
+  tradeoff (e.g. "80% of the result for 30% of the cost"), captured in Step 1.
+- **Lead with what to do.** Prescriptive instructions ("do X, in this order")
+  steer more precisely and are the primary lever. Keep "do NOT" guardrails too —
+  they are more universal — but state the positive action first.
 - **User feedback wins.** Solicit it explicitly and weight it above your own
   findings. If your analysis conflicts with their feedback, follow the feedback
   and say so.
 - **But never stop at feedback.** Always run the autonomous process analysis
   (`reference/process-analysis.md`). Extract the maximum signal — relentlessly
-  hunt for what to delete, simplify, reorder, automate, or cache.
+  hunt for ways to raise quality and remove waste (delete, simplify, reorder,
+  automate, cache).
 - **Evidence over opinion.** Every proposed change traces to something that
-  actually happened this session (a wrong turn, a re-run, a missing step, wasted
-  tokens, an explicit correction).
+  actually happened this session (a wrong turn, a re-run, a missing step, a
+  quality gap, an explicit correction).
 - **Restraint, not drama.** Optimize hard, but do not cause drastic evolution.
   The modification level (below) caps how far any single run may go.
-- **Smaller and sharper.** Adding words is a cost paid on every future load.
-  Justify additions or cut something else. Enforce the length mechanism
-  (`reference/length-and-structure.md`).
+- **Keep skills lean.** A skill's own instructions cost tokens on every load, so
+  cut bloat and enforce the length mechanism
+  (`reference/length-and-structure.md`) — this trims the *instructions*, never
+  the quality of the work they produce.
 - **Propose, don't impose.** Present a reviewable diff; edit only after approval.
 
 ## Workflow
@@ -54,8 +65,11 @@ Before analyzing anything, ask directly, e.g.:
 > differently next time?"
 
 Capture their points verbatim as **priority findings** — they outrank your own.
-Also read their tone for severity (see Step 3). If they have no feedback,
-continue — but never skip the ask.
+Also read their tone for severity (see Step 3). If they explicitly accept a
+quality/cost tradeoff (a cheaper but lower-quality outcome), record it — only
+then may cost-saving changes that lower final quality be proposed; otherwise
+final quality is non-negotiable. If they have no feedback, continue — but never
+skip the ask.
 
 ### Step 2 — Run both retrospective engines
 

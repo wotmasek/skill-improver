@@ -12,7 +12,9 @@ Invoke it manually with `/skill-improver` after finishing a task. It will:
 2. **Run two retrospective engines** — your feedback *and* its own
    first-principles process analysis (six lenses: question the requirement →
    delete → simplify → reorder → automate → cache), with a relevance bar so it
-   surfaces only changes that affect time, tokens, or correctness.
+   surfaces only changes that raise final quality, or cut steps/tokens without
+   costing quality. **Quality comes first, cost second — it never trades final
+   quality for fewer tokens unless you explicitly ask for that tradeoff.**
 3. **Pick a modification level from how it actually went** — went well → L1
    surgical, mediocre → L2 structural (default), went badly → L3 deep. The level
    caps how far a single run may go, so improvements stay incremental, never

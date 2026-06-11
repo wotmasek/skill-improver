@@ -47,12 +47,11 @@ Good descriptions are specific about *when*, not *what*. "Formats dates" is bad;
   could plausibly be confused with a neighbor skill.
 - Examples should reflect real situations from the session when possible.
 
-## 5. Token efficiency vs. output quality
+## 5. Output quality first, then token efficiency
 
-The goal is a *better* output for *fewer* tokens. Both matter — never trade away
-correctness for brevity.
-
-Look for waste the session exposed:
+Quality of the final output is the primary target; fewer tokens is secondary and
+counts only when the result is as good or better. Never trade quality for
+brevity. Within that constraint, look for waste the session exposed:
 - **Re-reads / redundant tool calls.** If the work re-read a file or re-ran a
   search the skill should have prevented, fix the instruction so it gathers the
   right thing once.
