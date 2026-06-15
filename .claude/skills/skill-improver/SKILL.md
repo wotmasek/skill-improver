@@ -36,6 +36,11 @@ It never edits silently. It **proposes** changes and waits for approval.
 - **Lead with what to do.** Prescriptive instructions ("do X, in this order")
   steer more precisely and are the primary lever. Keep "do NOT" guardrails too —
   they are more universal — but state the positive action first.
+- **Prefer the general over the special-case.** When a more universal solution
+  is at least as good, choose it — it ages better and covers cases you haven't
+  seen yet. Drop to a special case only when the exception is clear and concrete,
+  never speculative. But do not over-generalize: a real specific need beats a
+  premature abstraction — generalize once a pattern actually recurs (rule of three).
 - **User feedback wins.** Solicit it explicitly and weight it above your own
   findings. If your analysis conflicts with their feedback, follow the feedback
   and say so.
