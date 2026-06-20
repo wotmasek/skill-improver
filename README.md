@@ -8,6 +8,10 @@ new one when it spots a gap.
 
 Invoke it manually with `/skill-improver` after finishing a task. It will:
 
+0. **Verify past changes first (closed loop).** Before anything new, it reviews
+   the changes it made earlier against what happened since — confirming the ones
+   that worked and proposing a rollback (`git revert`) for any that caused
+   problems. It remembers across sessions via a small committed ledger.
 1. **Ask for your feedback first** and treat it as the highest-priority signal.
 2. **Run two retrospective engines** — your feedback *and* its own
    first-principles process analysis (six lenses: question the requirement →
@@ -36,14 +40,31 @@ It never edits a skill silently — you approve first.
 ```
 .claude/skills/skill-improver/
 ├── SKILL.md                          # workflow (loaded on trigger)
-└── reference/
-    ├── process-analysis.md           # six-lens engine + severity→level mapping
-    ├── evaluation-rubric.md          # scoring dimensions + token heuristics
-    ├── length-and-structure.md       # ~200-line split, navigation, condensing
-    └── skill-template.md             # structure for drafting a new skill
+├── reference/
+│   ├── verification-and-ledger.md    # closed-loop store, verdicts, rollback
+│   ├── process-analysis.md           # six-lens engine + severity→level mapping
+│   ├── evaluation-rubric.md          # scoring dimensions + token heuristics
+│   ├── length-and-structure.md       # ~200-line split, navigation, condensing
+│   └── skill-template.md             # structure for drafting a new skill
+├── scripts/
+│   ├── ledger.py                     # SQLite ledger CLI (stdlib only)
+│   └── hook_log_failure.py           # best-effort PostToolUse failure logger
+└── data/
+    └── ledger.sql                    # committed text store (ledger.db gitignored)
+.claude/commands/skill-log-error.md   # /skill-log-error quick logging
 ```
+
+## Closed-loop verification
+
+Each change skill-improver applies is logged (with its expected effect, keyed by
+git commit) into a small SQLite ledger. Problems get logged too — at a run, via
+`/skill-log-error`, or by a best-effort hook on failed test/build commands. On
+later runs the skill judges each past change and proposes reverting the harmful
+ones. The live `ledger.db` is rebuilt from the committed, diffable `ledger.sql`,
+so the history survives ephemeral sessions and is reviewable in PRs.
 
 ## Install
 
-Project-scoped already (lives in `.claude/skills/`). To use it globally across
-all projects, copy the `skill-improver` directory into `~/.claude/skills/`.
+Project-scoped already (lives in `.claude/`). To use it globally across all
+projects, copy the `skill-improver` directory into `~/.claude/skills/` (and the
+command into `~/.claude/commands/`). Requires Python 3 (standard library only).

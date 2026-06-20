@@ -51,6 +51,9 @@ It never edits silently. It **proposes** changes and waits for approval.
 - **Evidence over opinion.** Every proposed change traces to something that
   actually happened this session (a wrong turn, a re-run, a missing step, a
   quality gap, an explicit correction).
+- **Close the loop.** Every applied change is logged with its expected effect,
+  and past changes are reviewed before new ones — verify, don't just add
+  (`reference/verification-and-ledger.md`).
 - **Restraint, not drama.** Optimize hard, but do not cause drastic evolution.
   The modification level (below) caps how far any single run may go.
 - **Keep skills lean.** A skill's own instructions cost tokens on every load, so
@@ -60,6 +63,16 @@ It never edits silently. It **proposes** changes and waits for approval.
 - **Propose, don't impose.** Present a reviewable diff; edit only after approval.
 
 ## Workflow
+
+### Step 0 — Backward review (verify past changes first)
+
+Before any new analysis, check whether earlier changes actually worked. Read
+`reference/verification-and-ledger.md`, then run
+`python3 scripts/ledger.py pending`. For each pending mutation past its evidence
+window, assign a verdict (confirmed_good / ineffective / harmful) from the
+subsequent errors and record it with `ledger.py verdict`. For any **harmful**
+mutation, propose a rollback (`git revert <commit_sha>`) with its evidence —
+approval required. Past lessons then inform this run.
 
 ### Step 1 — Collect the user's feedback first (highest priority)
 
@@ -74,7 +87,8 @@ Also read their tone for severity (see Step 3). If they explicitly accept a
 quality/cost tradeoff (a cheaper but lower-quality outcome), record it — only
 then may cost-saving changes that lower final quality be proposed; otherwise
 final quality is non-negotiable. If they have no feedback, continue — but never
-skip the ask.
+skip the ask. Log each concrete problem (reported or observed) with
+`ledger.py log-error` so it becomes evidence for future verdicts.
 
 ### Step 2 — Run both retrospective engines
 
@@ -149,7 +163,10 @@ modified). Deep-change-gate items need their own explicit yes. Only after
 approval: edit the skill / reference files (and any approved hook / command /
 settings), then summarize what changed and what was deliberately left out.
 
-Do not commit or push unless the user asks.
+Do not commit or push unless the user asks. When changes are committed, log each
+one with `ledger.py log-mutation` (keyed by its `commit_sha`, with the
+`expected_effect` you stated), and include the updated `data/ledger.sql` in that
+commit so the verification history persists.
 
 ## Guardrails / anti-patterns
 
@@ -163,6 +180,9 @@ Do not commit or push unless the user asks.
 
 ## Reference files
 
+- `reference/verification-and-ledger.md` — the closed-loop store: schema, helper
+  commands, verdict states, evidence windows, rollback, error logging. Read in
+  Step 0 and Step 7.
 - `reference/process-analysis.md` — the six-lens first-principles engine,
   severity→level mapping, and relevance bar. Read in Step 2.
 - `reference/evaluation-rubric.md` — scoring dimensions and token heuristics.
